@@ -4,9 +4,9 @@
 #include <QMap>
 #include <QPixmap>
 #include <QVector>
-#include <QWidget>
+#include <QtWidgets/QWidget>
 #include "scale.h"
-#include <QLabel>
+#include <QtWidgets/QLabel>
 
 class EcgSignal;
 class Annotation;
@@ -46,7 +46,7 @@ public:
     bool readFile(const QString &fileName);
     int getSignalSampleRate() const;
     int getSignalSize() const;
-	void setSignalSampleRate();
+	void setSignalSampleRate(int);
 
 
 signals:

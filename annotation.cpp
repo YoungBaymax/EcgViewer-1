@@ -17,11 +17,13 @@ bool Annotation::findWaves()
 	double *ecgSignal = new double [size];
 	for(int i = 0; i < size; ++i)
 		ecgSignal[i] = data[i];
-	qrsAnn = ann.GetQRS(ecgSignal, size, sampleRate, L"filters");
+
+	wchar_t flt[8] = L"filters";
+	qrsAnn = ann.GetQRS(ecgSignal, size, sampleRate, flt);
 	if (qrsAnn)
 	{
 		ann.GetEctopics(qrsAnn, ann.GetQrsNumber(), sampleRate);
-		ANN = ann.GetPTU(ecgSignal, size, sampleRate, L"filters", qrsAnn, ann.GetQrsNumber());
+		ANN = ann.GetPTU(ecgSignal, size, sampleRate, flt, qrsAnn, ann.GetQrsNumber());
 		if (ANN)
 		{
 			annNum = ann.GetEcgAnnotationSize();

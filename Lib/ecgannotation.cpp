@@ -53,7 +53,7 @@ EcgAnnotation::~EcgAnnotation()
 // spectrum in cwt class
 // create qrsANN array   with qrsNum records  num of heart beats = qrsNum/2
 //
-int** EcgAnnotation::GetQRS(const double *data, int size, double sr, wchar_t *fltdir, int stype)
+int** EcgAnnotation::GetQRS(const double *data, int size, double sr,wchar_t *fltdir, int stype)
 {
 
         double *pdata = (double *)malloc(size * sizeof(double));

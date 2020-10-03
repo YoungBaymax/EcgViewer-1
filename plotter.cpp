@@ -1,4 +1,9 @@
 #include <QtGui>   //////////!!!!!!!!!!!!!!!!111111111111111
+#include <QtWidgets/QToolButton>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QStylePainter>
+#include <QtWidgets/qstyleoption.h>
+
 
 #include "plotter.h"
 #include "ecgsignal.h"
@@ -7,6 +12,11 @@
 
 #include <iostream>
 #include <algorithm>
+#include <QtWidgets/qstylepainter.h>
+#include <iostream>
+#include <fstream>
+
+
 
 Plotter::Plotter(QWidget *parent) : QWidget(parent)
 {
@@ -20,7 +30,7 @@ Plotter::Plotter(QWidget *parent) : QWidget(parent)
 	zoomYAxis.append(Scale());
 	curZoom = 0;
 
-    zoomInButton = new QToolButton(this);  //Перенести на тулбар, добавить контекстное меню
+    zoomInButton = new QToolButton(this);  //Перенест?на тулбар, добавить контекстно?меню
     zoomInButton->setIcon(QIcon(":/images/zoomin.png"));
     zoomInButton->adjustSize();
     connect(zoomInButton, SIGNAL(clicked()), this, SLOT(zoomIn()));
@@ -71,11 +81,11 @@ void Plotter::setSignalData()
 	int size = signal->size();
 	QVector<double> data = signal->data();
 
-	QPointF point [size];
+	QPointF point;
 	for (int i = 0; i < size; i++)
 	{
-		point[i] = QPointF(i, data[i]);
-		plotData.push_back(point[i]);
+		point = QPointF(i, data[i]);
+		plotData.push_back(point);
 	}
 	QVector<double>::iterator min_result = std::min_element(data.begin(), data.end());
 	int minPos = std::distance(data.begin(), min_result);
@@ -84,13 +94,13 @@ void Plotter::setSignalData()
 	int maxPos = std::distance(data.begin(), max_result);
 	int maxy = data[maxPos];
 
-    setMinX(0.0);                              //Выбор развертки в зависимости от длины сигнала
-    if (size <= 4000)
-        setMaxX(size / 4);   //size/4
+    setMinX(0.0);                              //Выбо?развертк??зависимост?от длин?сигнал?    
+	if (size <= 4000)
+        setMaxX(size / 1);   //size/4
     else if (size <= 1000)
         setMaxX(size);
     else if (size >= 10000)
-        setMaxX(size / 10);
+        setMaxX(size / 1);  //size/10
     setMinY(miny - 200);
     setMaxY(maxy + 200);
 
@@ -534,24 +544,28 @@ void Plotter::drawEcgGrid(QPainter *painter)       //Доработать !!!!!111
 {
 	painter->save();
 
-	QPen quiteDark = palette().dark().color().light();
-	for (int i = 0; i < width(); i += 4)
+	QPen quiteDark = palette().dark().color().light(); //1006
+	qDebug() << width() << _plotRect.height();
+	
+	for (int i = 0; i < _plotRect.width(); i += 4)
 	{
 		painter->setPen(quiteDark);
 		painter->drawLine(i, _plotRect.top(), i, _plotRect.bottom());
 		painter->drawLine(_plotRect.left(), i, _plotRect.right(), i);
 	}
 	//QPen quiteDark = palette().dark().color().light();
-	for (int i = 0; i < width(); i += 20)
-	{
-		painter->setPen(Qt::lightGray);
+	for (int i = 0; i < width(); i += 40)
+	{	
+		QColor minGridColor = QColor(255*0.5, 0, 0, 128);
+		painter->setPen(minGridColor);
 		painter->drawLine(i, _plotRect.top(), i, _plotRect.bottom());
 		painter->drawLine(_plotRect.left(), i, _plotRect.right(), i);
 	}
 	//QPen quiteDark = palette().dark().color().light();
-	for (int i = 0; i < width(); i += 40)
-	{
-		painter->setPen(Qt::darkGray);
+	for (int i = 0; i < width(); i += 200)
+	{	
+		QColor maxGridColor = QColor(255, 0, 0, 255);
+		painter->setPen(maxGridColor);
 		painter->drawLine(i, _plotRect.top(), i, _plotRect.bottom());
 		painter->drawLine(_plotRect.left(), i, _plotRect.right(), i);
 	}
@@ -601,7 +615,7 @@ void Plotter::drawAnnotation(QPainter *painter)
 	painter->restore();
 }
 
-bool Plotter::readFile(const QString &fileName)			//AAAAAAAAAAAAAA wtf переделать нафиг !!!
+bool Plotter::readFile(const QString &fileName)			//AAAAAAAAAAAAAA wtf переделать нафи?!!!
 {
 	plotData.clear();
 	delete annotation;									//!!!!!!!1111
@@ -609,21 +623,50 @@ bool Plotter::readFile(const QString &fileName)			//AAAAAAAAAAAAAA wtf переделат
 	signal->setSampleRate(1000);
 
 	QFile InFile(fileName);
-    if (!InFile.open(QIODevice::ReadOnly))              //Добавить проверку на расширение, magick number?
+	if (!InFile.open(QIODevice::ReadOnly))              //Добавить проверку на расширение, magick number?
 	{
 		QMessageBox::warning(this, tr("Plotter"),
-							 tr("Cannot read file "));
+			tr("Cannot read file "));
 		std::cerr << "Cannot open file for reading: " << qPrintable(InFile.errorString()) << std::endl;
 		return false;
 	}
 	int size = InFile.size() / sizeof(double);
-	signal->setSize(size);
 
-    QVector<double> data;
-    data.resize(size);
+	QVector<double> data;
+	data.resize(size);
+
+
+	// std::ofstream OutFile;
+	// OutFile.open("hex_out.dat", std::ofstream::binary);
+	//OutFile.open(QIODevice::WriteOnly);
+
+
 	for (int i = 0; i < size; i++)
-        InFile.read(reinterpret_cast<char*>(&data[i]), sizeof(double));
+	{
+		InFile.read(reinterpret_cast<char*>(&data[i]), sizeof(double));
+
+		int temp = data[i];
+
+		char * ch = reinterpret_cast<char*>(&temp);
+		//OutFile<< *ch;
+		// OutFile.write(ch, 2);
+		// qDebug() << temp;
+	}
     InFile.close();
+	// OutFile.close();
+
+
+	int show_interval = size;//1000 * 1 * 60;
+
+	QVector<double> data_show;
+	data_show.resize(show_interval);
+
+	for (int i = 0; i < show_interval; ++i)
+	{
+		data_show[i] = data[i];
+	}
+
+	signal->setSize(size);
 
     signal->setData(data);
 	setSignalData();
@@ -641,7 +684,7 @@ int Plotter::getSignalSize()const
 	return signal->size();
 }
 
-void Plotter::setSignalSampleRate()
+void Plotter::setSignalSampleRate(int sampleRate)
 {
-	signal->setSampleRate(100);
+	signal->setSampleRate(sampleRate);
 }

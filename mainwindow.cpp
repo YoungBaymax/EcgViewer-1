@@ -1,4 +1,5 @@
 #include <QtGui>
+#include <QtWidgets/QtWidgets>
 #include "mainwindow.h"
 
 #include "plotter.h"
@@ -10,14 +11,32 @@
 MainWindow::MainWindow()
 {
     plotter = new Plotter;
+
+
+	// qlayout = new QGridLayout;
+	// qlayout->addWidget(plotter);
+	// qlayout->setAlignment(plotter, Qt::AlignCenter);
+	// qlayout->addWidget(qslider);
+
+	// this->centralWidget()->setLayout(qlayout);
+	// MainWindow::setCentralWidget(plotter);
+
     //plotter->clearCurve(2);
+
+
     setCentralWidget(plotter);
+	centralWidget()->setLayout(new QVBoxLayout);
+
+
     //PlotSettings settings;
     //plotter->setPlotSettings(settings);
 
     createActions();
     createMenus();
     createToolbars();
+
+	createSlider();
+
     createStatusBar();
 
     setWindowIcon(QIcon(":/images/ecg.png"));
@@ -100,6 +119,37 @@ void MainWindow::createToolbars()
     fileToolBar->addAction(findWavesAction);
     fileToolBar->addAction(filterSignalAction);
     fileToolBar->setIconSize(QSize(20, 20));
+}
+void MainWindow::createSlider()
+{
+	qslider = new QSlider(this);
+	qslider->setOrientation(Qt::Horizontal);
+
+	qslider->installEventFilter(this);
+
+	centralWidget()->layout()->addWidget(qslider);
+	
+
+}
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+	if (obj == qslider)
+	{
+		if (event->type() == QEvent::MouseButtonPress)           //≈–∂œ¿‡–Õ
+		{
+			QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+			if (mouseEvent->button() == Qt::LeftButton) //≈–∂œ◊Ûº¸
+			{
+				int dur = qslider->maximum() - qslider->minimum();
+				int pos = qslider->minimum() + dur * ((double)mouseEvent->x() / qslider->width());
+				if (pos != qslider->sliderPosition())
+				{
+					qslider->setValue(pos);
+				}
+			}
+		}
+	}
+	return QObject::eventFilter(obj, event);
 }
 
 void MainWindow::createStatusBar()
@@ -208,7 +258,7 @@ void MainWindow::filterSignal()
 
 void MainWindow::set100Hz()
 {
-	plotter->setSignalSampleRate();
+	plotter->setSignalSampleRate(100);
 	updateStatusBar();
 }
 

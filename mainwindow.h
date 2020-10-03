@@ -1,14 +1,16 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QProgressBar>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QProgressBar>
 
 class QAction;
 class QLabel;
 class Plotter;
 class PlotSettings;
 class Signal;
+class QSlider;
+class QGridLayout;
 
 class MainWindow : public QMainWindow
 {
@@ -17,6 +19,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow();
     ~MainWindow();
+	QGridLayout *qlayout;
 
 protected:
     //void changeEvent(QEvent *e);
@@ -30,10 +33,12 @@ private slots:
 	void set100Hz();
 
 private:
+	bool eventFilter(QObject *obj, QEvent *event);
     void createActions();
     void createMenus();
     void createToolbars();
-    void createStatusBar();
+	void createSlider();
+	void createStatusBar();
     bool loadFile(const QString &fileName);
     void setCurrentFile(const QString &fileName);
     QString strippedName(const QString &fullFileName);
@@ -50,6 +55,10 @@ private:
     QMenu *helpMenu;
     QMenu *operationsMenu;
     QToolBar *fileToolBar;
+
+	QSlider *qslider;
+	
+
     QAction *openAction;
     QAction *exitAction;
     //QAction *showGridAction;             //TODO
